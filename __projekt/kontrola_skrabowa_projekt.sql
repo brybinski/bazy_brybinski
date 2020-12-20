@@ -7,20 +7,11 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
--- -----------------------------------------------------
--- Schema mydb
--- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Table `rybinskib`.`adres`
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
-USE `mydb` ;
-
--- -----------------------------------------------------
--- Table `mydb`.`adres`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`adres` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`adres` (
   `idadres` INT NOT NULL AUTO_INCREMENT,
   `Miasto` VARCHAR(45) NOT NULL,
   `Ulica` VARCHAR(45) NOT NULL,
@@ -30,9 +21,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`kontakt`
+-- Table `rybinskib`.`kontakt`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`kontakt` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`kontakt` (
   `idkontakt` INT NOT NULL AUTO_INCREMENT,
   `numer_telefonu` VARCHAR(9) NULL,
   `email` VARCHAR(45) NULL,
@@ -42,9 +33,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`podmiot`
+-- Table `rybinskib`.`podmiot`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`podmiot` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`podmiot` (
   `nip` VARCHAR(10) NOT NULL,
   `nazwa` VARCHAR(255) NOT NULL,
   `data_rozpoczecia_dg` DATE NOT NULL,
@@ -59,21 +50,21 @@ CREATE TABLE IF NOT EXISTS `mydb`.`podmiot` (
   INDEX `fk_podmiot_kontakt1_idx` (`kontakt_idkontakt` ASC) VISIBLE,
   CONSTRAINT `fk_podmiot_adres1`
     FOREIGN KEY (`adres_idadres`)
-    REFERENCES `mydb`.`adres` (`idadres`)
+    REFERENCES `rybinskib`.`adres` (`idadres`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_podmiot_kontakt1`
     FOREIGN KEY (`kontakt_idkontakt`)
-    REFERENCES `mydb`.`kontakt` (`idkontakt`)
+    REFERENCES `rybinskib`.`kontakt` (`idkontakt`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`kontroler`
+-- Table `rybinskib`.`kontroler`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`kontroler` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`kontroler` (
   `idkontroler` INT NOT NULL,
   `imie_nazwisko` VARCHAR(255) NOT NULL,
   `pesel` VARCHAR(11) NOT NULL,
@@ -86,21 +77,21 @@ CREATE TABLE IF NOT EXISTS `mydb`.`kontroler` (
   INDEX `fk_kontroler_kontakt1_idx` (`kontakt_idkontakt` ASC) VISIBLE,
   CONSTRAINT `fk_kontroler_adres1`
     FOREIGN KEY (`adres_idadres`)
-    REFERENCES `mydb`.`adres` (`idadres`)
+    REFERENCES `rybinskib`.`adres` (`idadres`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_kontroler_kontakt1`
     FOREIGN KEY (`kontakt_idkontakt`)
-    REFERENCES `mydb`.`kontakt` (`idkontakt`)
+    REFERENCES `rybinskib`.`kontakt` (`idkontakt`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`protokol`
+-- Table `rybinskib`.`protokol`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`protokol` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`protokol` (
   `IdKontroli` INT NOT NULL AUTO_INCREMENT,
   `podmiot_nip` VARCHAR(10) NOT NULL,
   `poczatek_kontroli` DATE NOT NULL,
@@ -109,16 +100,16 @@ CREATE TABLE IF NOT EXISTS `mydb`.`protokol` (
   PRIMARY KEY (`IdKontroli`, `podmiot_nip`),
   CONSTRAINT `fk_protokol_podmiot1`
     FOREIGN KEY (`podmiot_nip`)
-    REFERENCES `mydb`.`podmiot` (`nip`)
+    REFERENCES `rybinskib`.`podmiot` (`nip`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`podatek`
+-- Table `rybinskib`.`podatek`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`podatek` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`podatek` (
   `idpodatek` INT NOT NULL AUTO_INCREMENT,
   `podstawa_prawna` VARCHAR(45) NOT NULL,
   `wysokosc` VARCHAR(45) NOT NULL,
@@ -128,9 +119,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`przychodyrozchody`
+-- Table `rybinskib`.`przychodyrozchody`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`przychodyrozchody` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`przychodyrozchody` (
   `podmiot_nip` VARCHAR(10) NOT NULL,
   `okres_rozliczeniowy` YEAR NOT NULL,
   `przychody` DOUBLE NOT NULL,
@@ -139,16 +130,16 @@ CREATE TABLE IF NOT EXISTS `mydb`.`przychodyrozchody` (
   PRIMARY KEY (`podmiot_nip`),
   CONSTRAINT `fk_przychodyrozchody_podmiot1`
     FOREIGN KEY (`podmiot_nip`)
-    REFERENCES `mydb`.`podmiot` (`nip`)
+    REFERENCES `rybinskib`.`podmiot` (`nip`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`faktury`
+-- Table `rybinskib`.`faktury`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`faktury` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`faktury` (
   `numer_faktury` VARCHAR(45) NOT NULL,
   `Kwota` DOUBLE NOT NULL,
   `NIP` VARCHAR(45) NOT NULL,
@@ -159,16 +150,16 @@ CREATE TABLE IF NOT EXISTS `mydb`.`faktury` (
   INDEX `fk_faktury_przychodyrozchody1_idx` (`przychodyrozchody_podmiot_nip` ASC) VISIBLE,
   CONSTRAINT `fk_faktury_przychodyrozchody1`
     FOREIGN KEY (`przychodyrozchody_podmiot_nip`)
-    REFERENCES `mydb`.`przychodyrozchody` (`podmiot_nip`)
+    REFERENCES `rybinskib`.`przychodyrozchody` (`podmiot_nip`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`protokol_has_kontroler`
+-- Table `rybinskib`.`protokol_has_kontroler`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`protokol_has_kontroler` (
+CREATE TABLE IF NOT EXISTS `rybinskib`.`protokol_has_kontroler` (
   `protokol_IdKontroli` INT NOT NULL,
   `kontroler_idkontroler` INT NOT NULL,
   PRIMARY KEY (`protokol_IdKontroli`, `kontroler_idkontroler`),
@@ -176,12 +167,12 @@ CREATE TABLE IF NOT EXISTS `mydb`.`protokol_has_kontroler` (
   INDEX `fk_protokol_has_kontroler_protokol1_idx` (`protokol_IdKontroli` ASC) VISIBLE,
   CONSTRAINT `fk_protokol_has_kontroler_protokol1`
     FOREIGN KEY (`protokol_IdKontroli`)
-    REFERENCES `mydb`.`protokol` (`IdKontroli`)
+    REFERENCES `rybinskib`.`protokol` (`IdKontroli`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_protokol_has_kontroler_kontroler1`
     FOREIGN KEY (`kontroler_idkontroler`)
-    REFERENCES `mydb`.`kontroler` (`idkontroler`)
+    REFERENCES `rybinskib`.`kontroler` (`idkontroler`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -190,3 +181,5 @@ ENGINE = InnoDB;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
