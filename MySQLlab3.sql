@@ -61,6 +61,7 @@ DROP procedure eliksir_sily;
 SELECT wielkie_litery('xddddddddddddddd');
 
 #Zadanie 4
+CREATE TABLE system_alarmowy(id_alarmu int primary key, wiadomosc varchar(100));
 DELIMITER //
 
 CREATE TRIGGER uczestnicy_after_insert
