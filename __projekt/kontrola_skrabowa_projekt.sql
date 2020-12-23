@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `rybinskib`.`protokol` (
   `poczatek_kontroli` DATE NOT NULL,
   `koniec_kontroli` DATE NOT NULL,
   `Nieprawidlowosci` VARCHAR(1024) NULL DEFAULT 'brak nieprawidlowosci',
-  PRIMARY KEY (`IdKontroli`, `podmiot_nip`),
+  PRIMARY KEY (`IdKontroli`),
   CONSTRAINT `fk_protokol_podmiot1`
     FOREIGN KEY (`podmiot_nip`)
     REFERENCES `rybinskib`.`podmiot` (`nip`)
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `rybinskib`.`przychodyrozchody` (
   `przychody` DOUBLE NOT NULL,
   `rozchody` DOUBLE NOT NULL,
   `odliczony_VAT` DOUBLE NOT NULL,
-  PRIMARY KEY (`podmiot_nip`),
+  PRIMARY KEY (`podmiot_nip`, `okres_rozliczeniowy`),
   INDEX `fk_przychodyrozchody_podmiot2_idx` (`podmiot_nip` ASC) VISIBLE,
   CONSTRAINT `fk_przychodyrozchody_podmiot2`
     FOREIGN KEY (`podmiot_nip`)
@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS `rybinskib`.`przychodyrozchody` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
 
 
 -- -----------------------------------------------------
@@ -140,7 +141,6 @@ CREATE TABLE IF NOT EXISTS `rybinskib`.`faktury` (
   `numer_faktury` VARCHAR(45) NOT NULL,
   `Kwota` DOUBLE NOT NULL,
   `data` DATE NOT NULL,
-  `przychodyrozchody_podmiot_nip` VARCHAR(10) NOT NULL,
   `podatek` DOUBLE NOT NULL,
   PRIMARY KEY (`przychodyrozchody_podmiot_nip`),
   INDEX `fk_faktury_przychodyrozchody1_idx` (`przychodyrozchody_podmiot_nip` ASC) VISIBLE,
@@ -178,19 +178,64 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
-
 DELIMITER //
 CREATE TRIGGER podejrzenie
 BEFORE INSERT ON przychodyrozchody
 FOR EACH ROW
 BEGIN
-IF odliczony_VAT > ((SELECT wysokosc FROM p podatek WHERE YEAR(podatek.data) = przychodyrozchody.okres_rozliczeniowy )*rozchody)
+IF new.odliczony_VAT > 0.23*new.rozchody
 THEN 
-UPDATE podmiot SET czyPodejrzany = 1 
-WHERE przychodyrozchody.podmiot_nip = podmiot.nip;
+UPDATE podmiot SET czyPodejzany = 1 
+WHERE nip = new.podmiot_nip;
 
 END IF;
 
 END; //
 
 
+DELIMITER //
+CREATE TRIGGER zawieszenie
+BEFORE INSERT ON protokol
+FOR EACH ROW
+BEGIN
+IF nieprawidlowosci == 'brak nieprawidlowosci'
+THEN 
+UPDATE podmiot SET status_dg = 'aktywna'; 
+WHERE nip = new.podmiot_nip;
+ELSE 
+UPDATE podmiot SET status_dg = 'zawieszona'; 
+WHERE nip = new.podmiot_nip;
+END IF;
+
+END; //
+
+DELIMITER //
+CREATE PROCEDURE lapowka(IN nip1 int)
+BEGIN
+UPDATE podmiot SET czyPodejzany = 0
+WHERE nip = nip1;
+END
+//
+DELIMITER ;
+
+
+
+DELIMITER //
+CREATE FUNCTION suma_odliczen
+    RETURNS DOUBLE
+BEGIN
+    DECLARE suma DOUBLE;
+    DECLARE nip DOUBLE;
+    SELECT sum(podatek) INTO @suma FROM faktury;
+    RETURN @suma;
+END //
+
+DELIMITER //
+
+CREATE FUNCTION suma_odliczen(nip int, rok year)
+    RETURNS DOUBLE
+BEGIN
+    DECLARE suma DOUBLE;
+    SELECT sum(podatek) INTO @suma FROM faktury where przychodyrozchody_podmiot_nip = nip and year(data)=rok;
+    RETURN @suma;
+END //
